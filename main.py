@@ -1,5 +1,6 @@
 import random
 import re
+import rest
 
 concrete_nouns = [
     "sea", "ship", "sail", "wind", "breeze", "wave", "cloud", "mast", "captain", "sailor", "shark", "whale", "tuna",
@@ -42,16 +43,30 @@ part_of_speech_to_lists = {
     "adverb": adverbs,
     "adjective": adjectives
 }
+digits_to_part_of_speech = {
+    "1": "noun",
+    "2": "noun",
+    "3": "verb",
+    "4": "verb",
+    "5": "adjective",
+    "6": "adverb"
+}
 
 
 def get_rhyme(word, desired_part_of_speech):
+    rhymes = rest.ask_rhyme(word)
+    for i, rhyme in enumerate(rhymes):
+        if i > 30:
+            return "whales"
+        if desired_part_of_speech in rhyme[1]:
+            return rhyme[0]
+    print('couldnt find rhymes for {}'.format(word))
     return "whales"
 
 
 def get_part_of_speech_from_template(template):
     digit = re.findall(r"\[(\w+)\]", template)[0]
-
-    return ""
+    return digits_to_part_of_speech.get(digit)
 
 
 def gen_verses(random_pattern1: str, random_pattern2: str):
@@ -68,9 +83,15 @@ def gen_verses(random_pattern1: str, random_pattern2: str):
     last_word1 = extract_last_word_from_brackets(joined1)
     final1 = replace_last_word_and_remove_brackets(joined1, last_word1)
 
-    rhyme_for_last_word1 = get_rhyme(last_word1, get_part_of_speech_from_template(random_pattern2))
-    final2 = replace_last_word_and_remove_brackets(joined2, rhyme_for_last_word1)
-    return final1, final2
+    part_of_speech = get_part_of_speech_from_template(random_pattern2)
+    if part_of_speech:
+        rhyme_for_last_word1 = get_rhyme(last_word1, part_of_speech)
+        final2 = replace_last_word_and_remove_brackets(joined2, rhyme_for_last_word1)
+        return final1, final2
+    else:
+        rhyme_for_last_word1 = random.choice(interjections)
+        final2 = replace_last_word_and_remove_brackets(joined2, rhyme_for_last_word1)
+        return final1, final2
 
 
 def replace_last_word_and_remove_brackets(joined1, last_word1):
